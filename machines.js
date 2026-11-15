@@ -26,8 +26,20 @@ const MACHINES_SALLE = [
   {
     id: "legcurl", nom: "Leg curl", zone: "Ischios (arrière des cuisses)",
     svg: svgBase(sol + mach("M20 70 L120 70 M40 70 L40 96 M110 70 L110 96") + `<circle cx="130" cy="52" r="6" fill="var(--violet)" stroke="none"/>` + corps("M30 62 L100 62 L128 50", [22, 58])),
-    reglages: ["Genou juste dans le vide, au bord du banc (version allongée) ou aligné avec l'axe (version assise).", "Boudin au-dessus du talon."],
-    erreurs: ["Bassin qui décolle du banc.", "Mouvement trop rapide : contrôle la descente."],
+    reglages: ["Deux versions : assise (la plus facile pour toi) ou allongée (« curl jambes arrière »).", "Genou aligné avec l'axe de rotation de la machine.", "Boudin au-dessus du talon."],
+    erreurs: ["Bassin qui décolle du banc.", "Mouvement trop rapide : contrôle la descente.", "Charge trop lourde : les ischios progressent mieux par les répétitions."],
+  },
+  {
+    id: "adduct", nom: "Adducteurs", zone: "Intérieur des cuisses",
+    svg: svgBase(sol + mach("M50 96 L50 64 L110 64 L110 96 M50 64 L44 26") + `<rect x="66" y="72" width="8" height="20" rx="2" fill="var(--violet)" stroke="none"/><rect x="88" y="72" width="8" height="20" rx="2" fill="var(--violet)" stroke="none"/>` + corps("M48 36 L54 62 M54 62 L62 66 L60 92 M54 62 L100 66 L102 92", [46, 24])),
+    reglages: ["Coussinets sur l'intérieur des genoux.", "Commence avec une ouverture confortable, sans forcer l'étirement."],
+    erreurs: ["Laisser claquer les coussinets.", "Ouvrir trop grand dès la première série."],
+  },
+  {
+    id: "abdos", nom: "Machine à abdos", zone: "Abdominaux",
+    svg: svgBase(sol + mach("M44 96 L44 64 L92 64 L92 96 M44 64 L40 28 M40 28 L80 28") + corps("M46 34 L60 60 L96 62 L98 94 M46 40 L74 30", [52, 24])),
+    reglages: ["Dos calé contre le dossier, pieds bloqués.", "Les mains tiennent les poignées sans tirer."],
+    erreurs: ["Tirer avec les bras au lieu d'enrouler le buste.", "Aller trop vite : expire en enroulant."],
   },
   {
     id: "abduct", nom: "Abducteurs", zone: "Moyen fessier (côté de la hanche)",
@@ -123,13 +135,21 @@ const MACHINES_SALLE = [
 
 /* Lien exercice → machine, et clé pour mémoriser tes charges.
    uni : une jambe à la fois (charge droite et gauche) · pdc : poids du corps, pas de charge. */
+/* base : tes charges actuelles (relevées le 15/11/2026), affichées tant que tu n'as rien noté dans l'appli */
 const EXO_META = {
-  "Presse à cuisses une jambe": { k: "presse-1", mac: "presse", uni: true, pas: 2.5 },
-  "Presse une jambe": { k: "presse-1", mac: "presse", uni: true, pas: 2.5 },
-  "Presse à cuisses deux jambes, lourde": { k: "presse-2", mac: "presse", pas: 5 },
+  "Presse à cuisses une jambe": { k: "presse-1", mac: "presse", uni: true, pas: 2.5, base: { d: 20.3, g: 20.3 } },
+  "Presse une jambe": { k: "presse-1", mac: "presse", uni: true, pas: 2.5, base: { d: 20.3, g: 20.3 } },
+  "Presse à cuisses deux jambes, lourde": { k: "presse-2", mac: "presse", pas: 5, base: { kg: 47.5 } },
+  "Leg extension une jambe": { k: "legext-1", mac: "legext", uni: true, pas: 1, base: { d: 13.4, g: 13.4 } },
+  "Leg curl assis une jambe": { k: "legcurl-assis-1", mac: "legcurl", uni: true, pas: 1, base: { d: 18, g: 18 } },
+  "Leg curl allongé : monte à 2, redescends en 3 s": { k: "legcurl-allonge", mac: "legcurl", pas: 1, base: { kg: 23 } },
+  "Mollets à la presse (pointes de pieds)": { k: "mollets-presse", mac: "presse", pas: 2.5, base: { kg: 52 } },
+  "Machine adducteurs": { k: "adduct", mac: "adduct", pas: 2.5 },
+  "Abdos à la machine (crunch)": { k: "abdos", mac: "abdos", pas: 2.5, base: { kg: 29.3 } },
+  "Pont fessier talons sur un banc": { mac: "tapis", pdc: true },
   "Fente bulgare (pied arrière sur banc)": { k: "bulgare", mac: "halteres", uni: true, pas: 1, unite: "kg / haltère" },
   "Leg curl une jambe": { k: "legcurl-1", mac: "legcurl", uni: true, pas: 2.5 },
-  "Machine abducteurs": { k: "abduct", mac: "abduct", pas: 2.5 },
+  "Machine abducteurs": { k: "abduct", mac: "abduct", pas: 2.5, base: { kg: 34.3 } },
   "Mollets debout une jambe": { k: "mollets-1", mac: "mollets", pas: 1, unite: "kg (haltère)", option: true },
   "Planche + planche latérale": { mac: "tapis", pdc: true },
   "Hip thrust (machine ou barre)": { k: "hipthrust", mac: "hipthrust", pas: 5 },
@@ -149,7 +169,7 @@ const EXO_META = {
   "Mollets sautillés": { mac: "tapis", pdc: true },
   "Gainage planche avec touches d'épaule": { mac: "tapis", pdc: true },
   "Squat lent (4 s à la descente)": { k: "squat-lent", mac: "smith", pas: 2.5, unite: "kg ajoutés sur la barre" },
-  "Leg extension : monte à 2, redescends sur 1 jambe": { k: "legext", mac: "legext", pas: 2.5 },
+  "Leg extension : monte à 2, redescends sur 1 jambe": { k: "legext", mac: "legext", pas: 2.5, base: { kg: 20 } },
   "Step-down (descente de marche)": { mac: "box", pdc: true },
   "Fentes arrière lentes": { k: "fentes-ar", mac: "halteres", pas: 1, unite: "kg / haltère", option: true },
   "Équilibre une jambe sur coussin": { mac: "coussin", pdc: true },

@@ -201,16 +201,17 @@ const SEANCES = [
 
   /* ---------------- RENFO ---------------- */
   {
-    id: "r-unejambe", cat: "renfo", nom: "Jambes une par une", duree: 55, niveau: 2, test: "presse",
+    id: "r-unejambe", cat: "renfo", nom: "Jambes une par une", duree: 60, niveau: 2, test: "presse",
     resume: "Unilatéral : on continue à rééquilibrer droite / gauche.",
     pourquoi: "C'est ce qui a changé ta façon de courir. Toujours commencer par la jambe droite (la plus faible) et caler la gauche sur elle.",
     echauffement: "8' vélo ou elliptique, facile",
     exos: [
-      { n: "Presse à cuisses une jambe", s: "4 × 10 / jambe", r: "1'30", c: "Droite d'abord. Note les charges D et G : c'est ton test d'équilibre." },
-      { n: "Fente bulgare (pied arrière sur banc)", s: "3 × 8 / jambe", r: "1'30", c: "Haltères légers, genou dans l'axe du pied." },
-      { n: "Leg curl une jambe", s: "3 × 10 / jambe", r: "1'", c: "Ischios : protègent le genou en descente." },
+      { n: "Presse à cuisses une jambe", s: "5 × 10 / jambe", r: "1'30", c: "Droite d'abord. Note les charges D et G : c'est ton test d'équilibre." },
+      { n: "Leg extension une jambe", s: "5 × 10 / jambe", r: "1'", c: "Droite d'abord, descente lente." },
+      { n: "Leg curl assis une jambe", s: "5 × 5 / jambe", r: "1'30", c: "Ischios. Objectif : passer de 5 à 8 répétitions avant d'augmenter la charge." },
+      { n: "Fente bulgare (pied arrière sur banc)", s: "3 × 8 / jambe", r: "1'30", c: "Haltères légers ou poids du corps, genou dans l'axe du pied." },
       { n: "Machine abducteurs", s: "3 × 15", r: "1'", c: "Moyen fessier : la clé de la hanche." },
-      { n: "Mollets debout une jambe", s: "3 × 12 / jambe", r: "45\"", c: "Montée rapide, descente lente (3 s)." },
+      { n: "Mollets à la presse (pointes de pieds)", s: "5 × 15", r: "45\"", c: "Pointes de pieds en bas du plateau, montée rapide, descente lente." },
       { n: "Planche + planche latérale", s: "3 × 30\" chaque", r: "30\"", c: "Bassin bien aligné." },
     ],
   },
@@ -221,10 +222,10 @@ const SEANCES = [
     echauffement: "8' elliptique facile",
     exos: [
       { n: "Hip thrust (machine ou barre)", s: "4 × 10", r: "1'30", c: "Pause 1 s en haut, serre les fessiers." },
-      { n: "Pont fessier une jambe", s: "3 × 10 / jambe", r: "45\"", c: "Droite d'abord." },
+      { n: "Pont fessier talons sur un banc", s: "3 × 10", r: "1'", c: "Ischios + fessiers : la version facile du leg curl. Talons sur le banc, pousse le bassin vers le haut." },
       { n: "Machine abducteurs", s: "3 × 15", r: "1'", c: "Contrôle le retour." },
+      { n: "Machine adducteurs", s: "3 × 15", r: "1'", c: "Intérieur des cuisses : stabilise le genou et la hanche." },
       { n: "Marche latérale élastique", s: "3 × 12 pas / côté", r: "45\"", c: "Élastique au-dessus des genoux, reste basse." },
-      { n: "Clamshell (coquillage) élastique", s: "3 × 15 / côté", r: "30\"", c: "Bassin immobile." },
       { n: "Planche latérale genou fléchi", s: "3 × 30\" / côté", r: "30\"", c: "Ou jambes tendues si facile." },
     ],
   },
@@ -236,10 +237,11 @@ const SEANCES = [
     exos: [
       { n: "Squat (Smith machine ou goblet lourd)", s: "4 × 6", r: "2'", c: "Lourd mais propre. Descends jusqu'à cuisses parallèles." },
       { n: "Soulevé de terre jambes tendues haltères", s: "3 × 8", r: "2'", c: "Dos plat, ischios qui s'étirent." },
+      { n: "Leg curl allongé : monte à 2, redescends en 3 s", s: "3 × 8", r: "1'30", c: "Ton point faible, donc ta plus grosse marge. Même charge tant que 3 × 12 ne passe pas." },
       { n: "Montée sur box chargée", s: "3 × 6 / jambe", r: "1'30", c: "Box à hauteur de genou, pousse avec la jambe du haut." },
       { n: "Presse à cuisses deux jambes, lourde", s: "3 × 8", r: "2'", c: "Pieds largeur de bassin." },
       { n: "Tirage vertical", s: "3 × 10", r: "1'", c: "Le haut du corps aide pour les bâtons." },
-      { n: "Gainage dynamique (dead bug)", s: "3 × 10 / côté", r: "30\"", c: "Bas du dos collé au sol." },
+      { n: "Abdos à la machine (crunch)", s: "3 × 12", r: "1'", c: "Enroule le buste, sans tirer avec les bras." },
     ],
   },
   {

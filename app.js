@@ -137,7 +137,7 @@ function exoHtml(e, i) {
     const unite = e.unite || "kg";
     const sugg = (v) => (last && last.facile && v != null ? v + e.pas : null);
     const champ = (cote, lib) => {
-      const prec = last ? last[cote] : null;
+      const prec = last ? last[cote] : e.base ? e.base[cote] : null;
       return `<label style="margin:0;font-weight:500"><small>${lib}</small><br><input type="number" inputmode="decimal" step="0.5" min="0" data-charge="${i}" data-cote="${cote}" value="${auj[cote] ?? ""}" placeholder="${prec != null ? fmtKg(sugg(prec) ?? prec) : "kg"}"></label>`;
     };
     const conseil = last && last.facile
@@ -145,7 +145,7 @@ function exoHtml(e, i) {
       : last ? "Même charge que la dernière fois, et vise toutes les répétitions." : "";
     const ratio = auj.d && auj.g ? `<div class="muted">Droite = ${Math.round((auj.d / auj.g) * 100)} % de la gauche</div>` : "";
     charges = `<div class="charges">${e.uni ? champ("d", "Droite") + champ("g", "Gauche") : champ("kg", "Charge")}
-      <small>${esc(unite)}${e.option ? " (facultatif)" : ""}${last ? `<br>Dernière fois (${fmtDate(last.date)}) : ${chargeTxt(last, e.uni)}` : "<br>Première fois : note ta charge"}</small></div>
+      <small>${esc(unite)}${e.option ? " (facultatif)" : ""}${last ? `<br>Dernière fois (${fmtDate(last.date)}) : ${chargeTxt(last, e.uni)}` : e.base ? `<br>Ta base actuelle : ${chargeTxt(e.base, e.uni)}` : "<br>Première fois : note ta charge"}</small></div>
       ${conseil ? `<div class="conseil">${conseil}</div>` : ""}${ratio}
       <label class="facile"><input type="checkbox" data-facile="${i}" ${auj.facile ? "checked" : ""}> Toutes les répétitions, et c'était facile</label>`;
   }
