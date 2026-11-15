@@ -298,7 +298,8 @@ function vSeances(cat) {
     ${cat === "pdc" ? `<a class="card lien slot" href="#petits" style="border-color:var(--orange)"><div class="ico">✨</div><div class="grow"><h3>Petits plus à la carte</h3><div class="muted">${EXOS_PDC.length} exercices, une série chacun. Tu choisis, tu fais, tu coches.</div></div><div class="check">›</div></a>
     <h2>Capsules chronométrées</h2>` : ""}
     ${cat === "renfo" || cat === "cardio" ? `<a class="card lien slot" href="#machines" style="border-color:var(--orange)"><div class="ico">📷</div><div class="grow"><h3>Les machines de ma salle</h3><div class="muted">${MACHINES_SALLE.length} fiches : schéma, réglages, erreurs à éviter, et ta photo.</div></div><div class="check">›</div></a>` : ""}
-    ${SEANCES.filter((s) => s.cat === cat).map((s) => `<a class="card lien" href="#seance/${s.id}">
+    ${SEANCES.filter((s) => s.cat === cat).map((s) => `<a class="card lien" href="#seance/${s.id}"${s.fav ? ' style="border-color:var(--orange)"' : ""}>
+      ${s.fav ? `<span class="pill orange" style="margin-bottom:6px">⭐ Tes préférées</span>` : ""}
       <div class="row spread"><h3>${esc(s.nom)}</h3><span class="pill">${s.etapes ? dureeTxt(totalEtapes(s)) : s.duree ? s.duree + "'" : "Sortie"}</span></div>
       <p class="muted">${esc(s.resume)}</p>${"●".repeat(s.niveau)}<span style="opacity:.25">${"●".repeat(3 - s.niveau)}</span> <span class="muted">intensité</span></a>`).join("")}`;
 }

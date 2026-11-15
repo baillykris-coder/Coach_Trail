@@ -3,18 +3,19 @@
    Étapes chronométrées : { t: secondes, l: libellé, m: machine, z: zone } */
 
 const ZONES = {
-  1: { nom: "Récup", aide: "Très facile, tu respires par le nez" },
-  2: { nom: "Facile", aide: "Tu peux tenir une conversation" },
-  3: { nom: "Soutenu", aide: "Tu parles par phrases courtes" },
-  4: { nom: "Fort", aide: "Quelques mots seulement" },
-  5: { nom: "Très fort", aide: "Impossible de parler, à fond mais propre" },
+  1: { nom: "Récup", aide: "RPE 3-4 · très facile, tu respires par le nez" },
+  2: { nom: "Facile", aide: "RPE 5-6 · tu peux tenir une conversation" },
+  3: { nom: "Soutenu", aide: "RPE 7 · tu parles par phrases courtes" },
+  4: { nom: "Fort", aide: "RPE 8 · quelques mots seulement" },
+  5: { nom: "Très fort", aide: "RPE 9 · impossible de parler, à fond mais propre" },
 };
 
 const MACHINES = {
   velo: "Vélo",
   ellip: "Elliptique",
-  stepper: "Stepper / escalier",
+  stepper: "StairMaster",
   rameur: "Rameur",
+  tapisc: "Tapis de course",
   course: "Course",
   libre: "Poids du corps",
 };
@@ -41,7 +42,86 @@ const CATEGORIES = [
   { id: "express", nom: "Express 25'", emoji: "⚡", aide: "Pour les semaines pourries : ça compte !" },
 ];
 
+/* Échauffement commun de tes séances préférées (ne compte pas dans l'heure) */
+const ECHAUF_FAV = [st(5 * MIN, "Échauffement tranquille", "rameur", 2), st(5 * MIN, "Échauffement tranquille", "velo", 2)];
+
 const SEANCES = [
+  /* ---------------- CARDIO SALLE : TES SÉANCES PRÉFÉRÉES ⭐ ---------------- */
+  {
+    id: "f-relances", cat: "cardio", fav: true, nom: "🟢 Les relances", duree: 70, niveau: 2,
+    resume: "Vélo, StairMaster, elliptique : 60' de travail après 10' d'échauffement.",
+    pourquoi: "Travailler les changements de rythme, comme en trail.",
+    etapes: [
+      ...ECHAUF_FAV,
+      ...rep(6, [[3 * MIN, "Soutenu", "velo", 4], [2 * MIN, "Récupération active", "velo", 2]]),
+      ...rep(6, [[2 * MIN, "Rapide", "stepper", 4], [1 * MIN, "Récupération", "stepper", 2]]),
+      st(2 * MIN, "Facile", "stepper", 2),
+      st(10 * MIN, "Allure régulière", "ellip", 3),
+    ],
+  },
+  {
+    id: "f-moteur", cat: "cardio", fav: true, nom: "🔵 Le moteur", duree: 70, niveau: 2,
+    resume: "Rameur, vélo cadence élevée, elliptique avec accélérations.",
+    pourquoi: "Développer une grosse endurance : c'est le moteur des 33 km.",
+    etapes: [
+      ...ECHAUF_FAV,
+      st(20 * MIN, "Rythme constant", "rameur", 3),
+      st(20 * MIN, "Résistance moyenne, cadence élevée", "velo", 3),
+      ...rep(4, [[1 * MIN, "Très soutenu", "ellip", 4], [4 * MIN, "Régulier", "ellip", 3]]),
+    ],
+  },
+  {
+    id: "f-montagne", cat: "cardio", fav: true, nom: "🟠 La montagne", duree: 70, niveau: 3,
+    resume: "35' de StairMaster en blocs de 3', puis vélo dur et rameur.",
+    pourquoi: "Préparer les longues montées.",
+    etapes: [
+      ...ECHAUF_FAV,
+      ...rep(7, [[3 * MIN, "Rapide", "stepper", 4], [2 * MIN, "Récupération", "stepper", 2]]),
+      st(15 * MIN, "Résistance forte, cadence régulière", "velo", 3),
+      st(10 * MIN, "Rythme modéré", "rameur", 3),
+    ],
+  },
+  {
+    id: "f-trailindoor", cat: "cardio", fav: true, nom: "🔴 Trail indoor", duree: 70, niveau: 3,
+    resume: "Tapis incliné, StairMaster, rameur : un trail vallonné en salle.",
+    pourquoi: "Reproduire les efforts d'un trail vallonné.",
+    etapes: [
+      ...ECHAUF_FAV,
+      st(20 * MIN, "Inclinaison 10 à 15 % : marche très rapide ou petit footing", "tapisc", 3),
+      ...rep(6, [[2 * MIN, "Rapide", "stepper", 4], [1 * MIN, "Récupération", "stepper", 2]]),
+      st(2 * MIN, "Facile", "stepper", 2),
+      ...rep(5, [[1 * MIN, "Très intense", "rameur", 5], [3 * MIN, "Régulier", "rameur", 3]]),
+    ],
+  },
+  {
+    id: "f-circuit", cat: "cardio", fav: true, nom: "🟣 Circuit traileur", duree: 70, niveau: 3,
+    resume: "3 tours de rameur, vélo et StairMaster, très peu de pause entre les machines.",
+    pourquoi: "Fatigue musculaire + cardio : comme les jambes en fin de course.",
+    etapes: [
+      ...ECHAUF_FAV,
+      ...[1, 2, 3].flatMap((t) => [
+        st(8 * MIN, `Tour ${t}/3 · soutenu`, "rameur", 4),
+        st(6 * MIN, `Tour ${t}/3 · soutenu`, "velo", 4),
+        st(2 * MIN, `Tour ${t}/3 · rapide`, "stepper", 4),
+        st(1 * MIN, `Tour ${t}/3 · récup`, "stepper", 2),
+        st(2 * MIN, `Tour ${t}/3 · rapide`, "stepper", 4),
+        st(1 * MIN, `Tour ${t}/3 · récup`, "stepper", 2),
+      ]),
+    ],
+  },
+  {
+    id: "f-plusdure", cat: "cardio", fav: true, nom: "⚫ La plus difficile", duree: 70, niveau: 3,
+    resume: "Vélo au seuil, tapis à 12 %, rameur 500 m rapides / 250 m récup.",
+    pourquoi: "Repousser le seuil d'effort et finir fort.",
+    etapes: [
+      ...ECHAUF_FAV,
+      ...rep(4, [[4 * MIN, "Très soutenu", "velo", 4], [1 * MIN, "Récupération", "velo", 2]]),
+      ...rep(4, [[4 * MIN, "Inclinaison 12 % : marche rapide ou léger footing", "tapisc", 3], [1 * MIN, "Plus d'inclinaison ou de vitesse", "tapisc", 4]]),
+      ...rep(5, [[135, "500 m rapides (touche ⏭ dès que tu as tes 500 m)", "rameur", 5], [90, "250 m récupération (⏭ dès que c'est fait)", "rameur", 2]]),
+      st(75, "Finis tranquille jusqu'aux 20'", "rameur", 2),
+    ],
+  },
+
   /* ---------------- CARDIO SALLE ---------------- */
   {
     id: "c-quatre", cat: "cardio", nom: "Les Quatre Machines", duree: 50, niveau: 2,

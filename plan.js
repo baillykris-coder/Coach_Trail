@@ -35,18 +35,19 @@ const GABARIT = {
 
 /* Séances de salle par phase : [cardio, renfo] alternés selon la semaine */
 const SALLE_PAR_PHASE = {
-  "Reprise structurée": { cardio: ["c-quatre", "c-pyramide"], renfo: ["r-unejambe", "r-fessiers"] },
-  "Construction": { cardio: ["c-quatre", "c-pyramide"], renfo: ["r-unejambe", "r-fessiers"] },
-  "Consolidation": { cardio: ["c-pyramide", "c-quatre"], renfo: ["r-unejambe", "r-fonte"] },
-  "Développement": { cardio: ["c-grandhuit", "c-escaliers"], renfo: ["r-fonte", "r-unejambe"] },
-  "Spécifique": { cardio: ["c-escaliers", "c-tabata"], renfo: ["r-explosif", "r-descente"] },
-  "Spécifique — pic": { cardio: ["c-escaliers"], renfo: ["r-descente"] },
+  // Tes séances préférées (f-…) sont au cœur du plan, complétées par les autres
+  "Reprise structurée": { cardio: ["f-moteur", "f-relances", "c-quatre"], renfo: ["r-unejambe", "r-fessiers"] },
+  "Construction": { cardio: ["f-moteur", "f-relances", "c-pyramide"], renfo: ["r-unejambe", "r-fessiers"] },
+  "Consolidation": { cardio: ["f-relances", "f-moteur", "c-quatre"], renfo: ["r-unejambe", "r-fonte"] },
+  "Développement": { cardio: ["f-montagne", "f-trailindoor", "c-grandhuit"], renfo: ["r-fonte", "r-unejambe"] },
+  "Spécifique": { cardio: ["f-circuit", "f-plusdure", "f-trailindoor"], renfo: ["r-explosif", "r-descente"] },
+  "Spécifique — pic": { cardio: ["f-montagne"], renfo: ["r-descente"] },
   "Semaine allégée + test": { cardio: ["c-douce"], renfo: ["r-unejambe"] },
   "Récupération": { cardio: ["c-douce"], renfo: ["r-fessiers"] },
   "Affûtage": { cardio: ["c-pyramide"], renfo: ["r-fessiers"] },
   "Semaine de course": { cardio: ["e-cardio"], renfo: ["r-fessiers"] },
   "Récupération post-course": { cardio: ["c-douce"], renfo: ["r-fessiers"] },
-  "Entretien": { cardio: ["c-quatre", "c-grandhuit", "c-pyramide"], renfo: ["r-unejambe", "r-fonte", "r-fessiers"] },
+  "Entretien": { cardio: ["f-relances", "f-moteur", "f-montagne", "f-trailindoor", "f-circuit", "f-plusdure"], renfo: ["r-unejambe", "r-fonte", "r-fessiers"] },
 };
 const PLATS = ["p-decouverte", "p-lampadaires", "p-cadence", "p-lignes", "p-progressif"];
 

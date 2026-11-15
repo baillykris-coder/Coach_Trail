@@ -102,10 +102,16 @@ const MACHINES_SALLE = [
     erreurs: ["Monter sur la pointe des pieds : garde les talons posés."],
   },
   {
-    id: "stepper", nom: "Stepper / escalier", zone: "Cardio, montée",
+    id: "stepper", nom: "StairMaster (escalier)", zone: "Cardio, montée",
     svg: svgBase(sol + mach("M30 100 L30 80 L60 80 L60 60 L90 60 L90 40 L120 40 L120 100 M130 100 L130 20") + corps("M74 22 L74 46 L88 40 M74 46 L62 60 M74 28 L128 24", [74, 12])),
     reglages: ["Choisis une vitesse où tu tiens sans t'agripper.", "Pose tout le pied sur la marche."],
     erreurs: ["S'appuyer sur les rampes : ça annule la moitié du travail."],
+  },
+  {
+    id: "tapisc", nom: "Tapis de course", zone: "Cardio, marche en côte",
+    svg: svgBase(sol + mach("M20 96 L140 78 M128 80 L120 20 L104 20") + corps("M84 30 L84 60 L72 74 L70 90 M84 60 L96 72 L104 86 M84 38 L100 46", [84, 18])),
+    reglages: ["Monte l'inclinaison progressivement (10 à 15 % pour tes séances).", "Pince de sécurité accrochée à tes vêtements."],
+    erreurs: ["Se tenir aux barres en montée : ça fausse tout l'effort.", "Pas trop grands : garde une foulée courte et rapide."],
   },
   {
     id: "rameur", nom: "Rameur", zone: "Cardio, tout le corps",
