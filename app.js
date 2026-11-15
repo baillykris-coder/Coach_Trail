@@ -13,6 +13,11 @@ function defaut() {
     logs: [],
     petits: [],
     charges: {},
+    ecurie: [],
+    sommets: {},
+    checklist: {},
+    predictions: {},
+    poids: null,
     semaines: {},
     badges: {},
     repere: "Ma boucle de Castelnou (~10 km)",
@@ -183,9 +188,9 @@ function route() {
   const [chemin, qs] = h.split("?");
   const q = Object.fromEntries(new URLSearchParams(qs || ""));
   const [vue, a, b] = chemin.split("/");
-  document.querySelectorAll(".tabbar a").forEach((x) => x.classList.toggle("on", x.dataset.tab === (["seance", "go", "petits", "machines", "machine"].includes(vue) ? "seances" : vue === "retour" ? "accueil" : vue)));
+  document.querySelectorAll(".tabbar a").forEach((x) => x.classList.toggle("on", x.dataset.tab === (["seance", "go", "petits", "machines", "machine"].includes(vue) ? "seances" : ["retour", "ravito", "jourj", "sommets", "bravo"].includes(vue) ? "accueil" : vue)));
   document.getElementById("tabbar").hidden = vue === "go";
-  const vues = { accueil: vAccueil, semaine: vSemaine, seances: vSeances, seance: vSeance, go: vGo, retour: vRetour, progres: vProgres, reglages: vReglages, petits: vPetits, machines: vMachines, machine: vMachine };
+  const vues = { accueil: vAccueil, semaine: vSemaine, seances: vSeances, seance: vSeance, go: vGo, retour: vRetour, progres: vProgres, reglages: vReglages, petits: vPetits, machines: vMachines, machine: vMachine, ravito: vRavito, jourj: vJourJ, sommets: vSommets, bravo: vBravo };
   (vues[vue] || vAccueil)(a, b, q);
   remplirPhotos();
   window.scrollTo(0, 0);
@@ -220,21 +225,22 @@ function vAccueil() {
   const obj = P.obj && !objectifPour(S, lundi).apres ? P.obj : null;
   const jRest = obj ? daysBetween(today(), obj.date) : null;
   const socleFaits = P.socle.filter((s) => s.fait).length;
+  const pred = obj ? memoriserPrediction() : null;
   const salut = S.prenom ? `Salut ${esc(S.prenom)} 👋` : "Salut 👋";
 
   $app.innerHTML = `
     <p class="muted">${fmtDate(today(), { weekday: "long", day: "numeric", month: "long" })}</p>
     <h1>${salut}</h1>
     ${!S.prenom ? `<div class="card"><label for="pn">Comment je t'appelle ?</label><div class="row"><input id="pn" placeholder="Ton prénom"><button class="btn" id="pnok">OK</button></div></div>` : ""}
-    ${obj ? `<div class="hero">
+    ${obj ? `<a class="hero" href="#jourj" style="display:block;text-decoration:none">
       <div class="muted">${esc(obj.nom)} · ${fmtDate(obj.date, { day: "numeric", month: "long", year: "numeric" })}</div>
       <div class="row spread" style="align-items:flex-end;margin-top:6px">
         <div><div class="j">${jRest > 0 ? "J-" + jRest : jRest === 0 ? "Jour J !" : "Bravo !"}</div><div class="muted">${obj.km} km · ${obj.dplus} m D+</div></div>
         ${J ? `<div style="text-align:right"><div style="font-size:1.6rem;font-weight:800">${J.pct}%</div><div class="muted">préparation</div></div>` : ""}
       </div>
       ${J ? `<div class="barre"><i style="width:${J.pct}%"></i></div>` : ""}
-      <div class="muted">${esc(P.phase)}</div>
-    </div>` : `<div class="card"><h3>Pas d'objectif à venir</h3><p class="muted">Ajoute ton prochain défi dans Réglages.</p><a class="btn second" href="#reglages">Ajouter un objectif</a></div>`}
+      <div class="row spread"><span class="muted">${esc(P.phase)}</span><span class="muted">${pred ? `⏱️ ≈ ${hm(pred.min)} · ` : ""}Jour J ›</span></div>
+    </a>` : `<div class="card"><h3>Pas d'objectif à venir</h3><p class="muted">Ajoute ton prochain défi dans Réglages.</p><a class="btn second" href="#reglages">Ajouter un objectif</a></div>`}
 
     <div class="row" style="gap:10px;margin-bottom:12px">
       <div class="stat grow"><b>${ser > 0 ? "🔥 " + ser : "0"}</b><span>semaine${ser > 1 ? "s" : ""} tenue${ser > 1 ? "s" : ""} d'affilée</span></div>
@@ -247,8 +253,15 @@ function vAccueil() {
     ${P.socle.map(slotHtml).join("")}
 
     <a class="btn large orange" href="#retour" style="margin-top:6px">✍️ J'ai fait une séance</a>
+    <div class="row" style="gap:8px;margin-top:12px">
+      <a class="stat grow" href="#ravito" style="text-decoration:none;color:inherit"><b>🍌</b><span>Ravito</span></a>
+      <a class="stat grow" href="#sommets" style="text-decoration:none;color:inherit"><b>🏔️ ${Object.keys(S.sommets || {}).length}/${SOMMETS.length}</b><span>Sommets</span></a>
+      <a class="stat grow" href="#jourj" style="text-decoration:none;color:inherit"><b>🏁</b><span>Jour J</span></a>
+    </div>
     ${petitsCarte(lundi)}
+    ${ecurieCarte()}
   `;
+  brancherEcurie(route);
   const ok = document.getElementById("pnok");
   if (ok) ok.onclick = () => { const v = document.getElementById("pn").value.trim(); if (v) { S.prenom = v; save(); route(); } };
 }
@@ -594,6 +607,8 @@ function vRetour(a, b, q) {
   $app.innerHTML = `<a class="retour-haut" href="javascript:history.back()">‹ Retour</a>
     <h1>${L ? "Modifier la séance" : estCourse ? "🏁 Ma course" : "✍️ Mon retour"}</h1>
     <p class="muted">30 secondes, et ton plan s'adapte.</p>
+    <label class="btn second large" style="margin:8px 0 0">⌚ Importer depuis Garmin (fichier GPX ou TCX)<input type="file" id="gpx" accept=".gpx,.tcx,application/gpx+xml,application/xml,text/xml" hidden></label>
+    <p class="muted" id="gpxmsg" style="margin-top:6px">${L && L.trace ? "📍 Trace GPS enregistrée avec cette séance." : "Distance, D+, durée, FC et cadence se remplissent tout seuls, et tes sommets se débloquent."}</p>
     <form id="f">
       ${estCourse ? "" : `<label>Séance</label><select name="sessionId" id="sid"><option value="autre" ${sid === "autre" ? "selected" : ""}>Autre / séance libre</option>${options}</select>
       <div id="catLibre"><label>Type de séance libre</label><select name="cat">${CATEGORIES.map((c) => `<option value="${c.id}" ${L && L.cat === c.id ? "selected" : ""}>${c.emoji} ${c.nom}</option>`).join("")}</select>
@@ -610,6 +625,8 @@ function vRetour(a, b, q) {
       ${curseur("ressenti", "Effort ressenti", v.ressenti, 1, 10, "très facile", "à bloc")}
       ${curseur("fatigue", "Fatigue générale aujourd'hui", v.fatigue, 1, 10, "en forme", "épuisée")}
       ${curseur("hanche", "Hanche droite", v.hanche, 0, 10, "rien", "douleur forte")}
+      <div id="blocRavito"><label>🍌 Ravito testé (ce que tu as mangé et bu)</label><input name="ravito" value="${esc(v.ravito || "")}" placeholder="ex. 2 gels + 1 barre, 1 L de boisson">
+        <label>Et ton ventre ?</label><select name="ventre"><option value="">–</option>${[["ok", "😊 Tout bien"], ["bof", "😐 Bof"], ["ko", "🤢 Pas bien"]].map(([k, t]) => `<option value="${k}" ${v.ventre === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
       <label>Un mot ? (sensations, météo, parcours…)</label><textarea name="note">${esc(v.note || "")}</textarea>
       <button class="btn large vert" style="margin-top:16px">💾 Enregistrer</button>
       ${L ? `<button type="button" class="btn large second" id="suppr" style="margin-top:10px">🗑 Supprimer cette séance</button>` : ""}
@@ -626,10 +643,28 @@ function vRetour(a, b, q) {
     document.getElementById("blocCad").hidden = !["trail", "plat"].includes(cat);
     document.getElementById("blocChrono").hidden = !(estCourse || id === "t-repere");
     document.getElementById("blocPresse").hidden = !(s && s.test === "presse");
+    document.getElementById("blocRavito").hidden = cat !== "trail";
   }
   if (sel) { sel.onchange = majChamps; f.cat.onchange = majChamps; }
   f.querySelectorAll("input[type=range]").forEach((r) => (r.oninput = () => (document.getElementById("v-" + r.name).textContent = r.value)));
   majChamps();
+
+  // Import d'une sortie Garmin
+  let trace = L && L.trace ? L.trace : null;
+  document.getElementById("gpx").onchange = async (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    const msg = document.getElementById("gpxmsg");
+    if (!file) return;
+    try {
+      const r = await lireSortie(file);
+      if (r.date) f.date.value = r.date > today() ? today() : r.date;
+      ["duree", "km", "dplus", "fc", "cadence"].forEach((k) => { if (r[k] != null) f[k].value = r[k]; });
+      trace = r.trace;
+      if (sel && !seance(sel.value)) { sel.value = "autre"; f.cat.value = "trail"; }
+      majChamps();
+      msg.textContent = `✅ Sortie importée : ${r.km} km, ${r.dplus} m D+, ${r.duree ? hm(r.duree) : "durée inconnue"}. Vérifie, complète ton ressenti, puis enregistre.`;
+    } catch (e) { msg.textContent = "⚠️ Je n'arrive pas à lire ce fichier. Il faut un fichier .gpx ou .tcx exporté depuis Garmin Connect."; }
+  };
 
   f.onsubmit = (ev) => {
     ev.preventDefault();
@@ -647,14 +682,19 @@ function vRetour(a, b, q) {
     ["duree", "km", "dplus", "cadence", "fc", "presseD", "presseG", "ressenti", "fatigue", "hanche"].forEach((k) => { if (d[k] !== undefined && d[k] !== "") log[k] = Number(String(d[k]).replace(",", ".")); });
     if (d.chrono) log.chrono = d.chrono;
     if (d.note) log.note = d.note.trim();
+    if (d.ravito && log.cat === "trail") log.ravito = d.ravito.trim();
+    if (d.ventre && log.cat === "trail") log.ventre = d.ventre;
+    if (trace) log.trace = trace;
     if (L) S.logs[S.logs.indexOf(L)] = log; else S.logs.push(log);
     S.logs.sort((x, y) => (x.date < y.date ? -1 : 1));
+    const sommetsNeufs = trace ? sommetsDeTrace(trace, log.date) : [];
     save();
     const nouveaux = verifierBadges();
     let msg = L ? "Séance modifiée ✅" : "Bien joué ! Séance enregistrée ✅";
     if (log.hanche >= 4) msg = "Enregistré. Ta hanche est notée : la suite s'adapte 🧡";
-    toast(nouveaux.length ? `🏅 Nouveau badge : ${nouveaux.map((x) => x.emoji + " " + x.nom).join(", ")}` : msg, nouveaux.length ? 4500 : 2800);
-    location.hash = L ? "#progres" : "#accueil";
+    if (sommetsNeufs.length) msg = `🏔️ ${sommetsNeufs.length > 1 ? sommetsNeufs.length + " sommets débloqués" : "Débloqué"} : ${sommetsNeufs.map((p) => p.nom).join(", ")} !`;
+    toast(nouveaux.length ? `🏅 Nouveau badge : ${nouveaux.map((x) => x.emoji + " " + x.nom).join(", ")}` : msg, nouveaux.length || sommetsNeufs.length ? 4500 : 2800);
+    location.hash = estCourse && !L ? `#bravo/${log.id}` : L ? "#progres" : "#accueil";
   };
   const sup = document.getElementById("suppr");
   if (sup) sup.onclick = () => { if (confirm("Supprimer cette séance ?")) { S.logs = S.logs.filter((l) => l.id !== L.id); save(); location.hash = "#progres"; } };
@@ -696,6 +736,8 @@ function vProgres() {
     <div class="stats"><div class="stat"><b>${depuis.length}</b><span>séances</span></div><div class="stat"><b>${Math.round(km)}</b><span>km</span></div><div class="stat"><b>${dp}</b><span>m D+</span></div></div>
     ${J ? `<div class="card" style="margin-top:12px"><h3>Jauge de préparation : ${J.pct}%</h3><div class="barre"><i style="width:${J.pct}%"></i></div>
       <p class="muted">Régularité : ${J.tenues} semaine${J.tenues > 1 ? "s" : ""} tenue${J.tenues > 1 ? "s" : ""} sur ${J.total} jusqu'à la course · Fond : plus longue sortie ${J.maxKm} km sur ${J.pic} km visés.</p></div>` : ""}
+    ${predictionCarte()}
+    <a class="card lien slot" href="#sommets"><div class="ico">🏔️</div><div class="grow"><h3>Chasse aux sommets</h3><div class="muted">${Object.keys(S.sommets || {}).length} / ${SOMMETS.length} débloqués</div></div><div class="check">›</div></a>
     <h2>Les 10 dernières semaines</h2>
     <div class="card"><div class="barres">${sem.map((s) => `<div class="b" title="${s.n} séances, ${Math.round(s.km)} km"><span>${s.n || ""}</span><i class="${s.n ? "" : "vide"}" style="height:${Math.max(4, (s.n / maxN) * 100)}%"></i><span>${fmtDate(s.m, { day: "numeric", month: "numeric" })}</span></div>`).join("")}</div>
     <p class="muted" style="margin-top:8px">Nombre de séances par semaine. Le but : plus aucune barre vide.</p></div>
@@ -720,7 +762,7 @@ function resumeCoach() {
   const lignes = ls.map((l) => [
     l.date, l.nom, l.duree ? `${l.duree}'` : "", l.km ? `${l.km} km` : "", l.dplus ? `${l.dplus} D+` : "",
     l.cadence ? `cad ${l.cadence}` : "", l.fc ? `FC ${l.fc}` : "", l.chrono ? `chrono ${l.chrono}` : "",
-    l.presseD ? `presse D${l.presseD}/G${l.presseG}` : "", `effort ${l.ressenti ?? "-"}/10`, `fatigue ${l.fatigue ?? "-"}/10`, `hanche ${l.hanche ?? "-"}/10`, l.note ? `« ${l.note} »` : "",
+    l.presseD ? `presse D${l.presseD}/G${l.presseG}` : "", l.ravito ? `ravito : ${l.ravito} (ventre ${l.ventre || "?"})` : "", `effort ${l.ressenti ?? "-"}/10`, `fatigue ${l.fatigue ?? "-"}/10`, `hanche ${l.hanche ?? "-"}/10`, l.note ? `« ${l.note} »` : "",
   ].filter(Boolean).join(" · "));
   return `=== Coach Trail — point du ${today()} ===
 Objectif : ${P.obj ? `${P.obj.nom} le ${P.obj.date} (${P.obj.km} km / ${P.obj.dplus} D+)` : "aucun"}
@@ -733,7 +775,11 @@ ${lignes.join("\n") || "aucune"}
 Petits plus poids du corps (6 dernières semaines) : ${petitsTxt(debut)}
 
 Charges en salle (dernière valeur notée) :
-${chargesTxt() || "aucune"}`;
+${chargesTxt() || "aucune"}
+
+Chrono estimé : ${(() => { const p = P.obj ? prediction(P.obj) : null; return p ? hm(p.min) : "pas encore de données"; })()}
+Écurie (6 semaines) : ${(S.ecurie || []).filter((x) => x.date >= debut).map((x) => `${x.date} ${ECURIE[x.niv].nom}`).join(", ") || "rien noté"}
+Sommets débloqués : ${Object.keys(S.sommets || {}).length}/${SOMMETS.length}${Object.keys(S.sommets || {}).length ? " (" + Object.keys(S.sommets).map((k) => (SOMMETS.find((p) => p.id === k) || { nom: k }).nom).join(", ") + ")" : ""}`;
 }
 function chargesTxt() {
   return Object.entries(S.charges || {}).filter(([, l]) => l.length).map(([k, l]) => {

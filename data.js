@@ -531,6 +531,12 @@ const BADGES = [
   { id: "petits50", nom: "50 petits plus", emoji: "🌟", aide: "50 exercices poids du corps cochés" },
   { id: "petits100", nom: "100 petits plus", emoji: "💫", aide: "100 exercices poids du corps cochés" },
   { id: "ecurie", nom: "Coach de l'écurie", emoji: "🐴", aide: "5 exercices « spécial écurie » cochés" },
+  { id: "cavaliere", nom: "Cavalière de fer", emoji: "🏇", aide: "30 points écurie" },
+  { id: "ventre", nom: "Ventre de traileuse", emoji: "🍌", aide: "3 ravitos testés, ventre OK" },
+  { id: "sommets5", nom: "Chasseuse de sommets", emoji: "⛰️", aide: "5 sommets ou lieux débloqués" },
+  { id: "sommets15", nom: "Reine des Aspres", emoji: "👸", aide: "15 sommets ou lieux débloqués" },
+  { id: "helena", nom: "Toit des Aspres", emoji: "🏔️", aide: "Mont Hélèna débloqué" },
+  { id: "legende", nom: "Légende", emoji: "👑", aide: "Santa Anna dels Quatre Termes débloquée" },
 ];
 
 /* ---------------- PETITS PLUS : exercices poids du corps à la carte ----------------

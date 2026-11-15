@@ -203,6 +203,11 @@ function planSemaine(S, monday) {
     });
     for (let i = bonus.length - 1; i >= 0; i--) if (bonus[i].cats.includes("plat")) bonus.splice(i, 1);
   }
+  // Grosse journée à l'écurie aujourd'hui ou hier (semaine en cours seulement)
+  if (monday === mondayOf(today())) {
+    const grosse = (S.ecurie || []).find((x) => x.niv === 3 && (x.date === today() || x.date === addDays(today(), -1)));
+    if (grosse) alertes.push({ niv: "orange", txt: `Grosse journée à l'écurie ${grosse.date === today() ? "aujourd'hui" : "hier"} 🐴 : ton corps a déjà bossé. Si tu t'entraînes, prends la version courte (express) ou la routine hanche.` });
+  }
   if (fatigue && focus !== "chargee") {
     alertes.push({ niv: "orange", txt: "Grosse fatigue à ton dernier retour : on oublie les bonus cette semaine, le socle suffit." });
     bonus.splice(0, bonus.length, ...bonus.filter((b) => b.cats.includes("mobilite")));
@@ -253,6 +258,13 @@ function calculerBadges(S) {
   L.forEach((l) => { const m = mondayOf(l.date); (parSem[m] = parSem[m] || []).push(l); });
   if (Object.values(parSem).some((ls) => ls.length === 1 && ls[0].cat === "express")) got.express = true;
   if (L.some((l) => l.course)) got.finisher = true;
+  if (L.filter((l) => l.ventre === "ok").length >= 3) got.ventre = true;
+  if ((S.ecurie || []).reduce((a, x) => a + x.niv, 0) >= 30) got.cavaliere = true;
+  const nbSommets = Object.keys(S.sommets || {}).length;
+  if (nbSommets >= 5) got.sommets5 = true;
+  if (nbSommets >= 15) got.sommets15 = true;
+  if ((S.sommets || {}).helena) got.helena = true;
+  if ((S.sommets || {}).santaanna) got.legende = true;
   return got;
 }
 
