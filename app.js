@@ -143,7 +143,7 @@ function exoHtml(e, i) {
     const sugg = (v) => (last && last.facile && v != null ? v + e.pas : null);
     const champ = (cote, lib) => {
       const prec = last ? last[cote] : e.base ? e.base[cote] : null;
-      return `<label style="margin:0;font-weight:500"><small>${lib}</small><br><input type="number" inputmode="decimal" step="0.5" min="0" data-charge="${i}" data-cote="${cote}" value="${auj[cote] ?? ""}" placeholder="${prec != null ? fmtKg(sugg(prec) ?? prec) : "kg"}"></label>`;
+      return `<label style="margin:0;font-weight:500"><small>${lib}</small><br><input type="text" inputmode="decimal" data-charge="${i}" data-cote="${cote}" value="${auj[cote] != null ? fmtKg(auj[cote]) : ""}" placeholder="${prec != null ? fmtKg(sugg(prec) ?? prec) : "kg"}"></label>`;
     };
     const conseil = last && last.facile
       ? `💡 C'était facile la dernière fois : essaie ${e.uni ? `D ${fmtKg(sugg(last.d) ?? 0)} / G ${fmtKg(sugg(last.g) ?? 0)}` : fmtKg(sugg(last.kg) ?? 0)} kg`
@@ -167,7 +167,7 @@ function brancherCharges(s) {
     const e = s.exos[i];
     const box = $app.querySelectorAll(`[data-charge="${i}"]`);
     const entree = { date: today() };
-    box.forEach((inp) => { if (inp.value !== "") entree[inp.dataset.cote] = Number(inp.value.replace(",", ".")); });
+    box.forEach((inp) => { const n = parseFloat(inp.value.replace(",", ".")); if (inp.value.trim() !== "" && isFinite(n)) entree[inp.dataset.cote] = n; });
     const fac = $app.querySelector(`[data-facile="${i}"]`);
     entree.facile = !!(fac && fac.checked);
     const liste = (S.charges[e.k] || []).filter((c) => c.date !== today());
@@ -206,13 +206,25 @@ function slotHtml(slot) {
   if (slot.km) detail = `${slot.km} km · ~${slot.dplus} m D+`;
   else if (s && s.etapes) detail = dureeTxt(totalEtapes(s));
   else if (s && s.duree) detail = `${s.duree}'`;
-  const href = slot.course ? "#retour/course" : `#seance/${slot.id}${slot.km ? `?km=${slot.km}&dplus=${slot.dplus}` : ""}`;
   const fait = slot.fait;
-  return `<a class="card lien slot ${fait ? "fait" : ""}" href="${href}">
+  if (fait) {
+    // Case faite : on affiche la séance RÉELLEMENT faite, et un toucher ouvre son retour pour la corriger ou la supprimer
+    const autre = !slot.course && fait.sessionId !== slot.id;
+    const cf = catInfo(fait.cat);
+    return `<a class="card lien slot fait" href="#retour/edit/${fait.id}">
+      <div class="ico">${slot.course ? "🏁" : cf.emoji}</div>
+      <div class="grow"><div class="muted">${esc(slot.role)}</div><h3>${esc(fait.nom)}</h3>
+        <div class="muted">✅ Fait le ${fmtDate(fait.date, { weekday: "long", day: "numeric" })}${fait.km ? ` · ${fait.km} km` : ""}${fait.duree ? ` · ${fait.duree}'` : ""}</div>
+        ${autre && s ? `<div class="muted">à la place de « ${esc(s.nom)} »</div>` : ""}
+        <div class="muted" style="font-size:.8rem">Toucher pour modifier ou supprimer</div></div>
+      <div class="check">✅</div></a>`;
+  }
+  const href = slot.course ? "#retour/course" : `#seance/${slot.id}${slot.km ? `?km=${slot.km}&dplus=${slot.dplus}` : ""}`;
+  return `<a class="card lien slot" href="${href}">
     <div class="ico">${c.emoji}</div>
     <div class="grow"><div class="muted">${esc(slot.role)}</div><h3>${nom}</h3>
-      <div class="muted">${fait ? `✅ Fait le ${fmtDate(fait.date, { weekday: "long", day: "numeric" })}${fait.nom && s && fait.nom !== s.nom ? ` (${esc(fait.nom)})` : ""}` : detail}</div></div>
-    <div class="check">${fait ? "✅" : "›"}</div></a>`;
+      <div class="muted">${detail}</div></div>
+    <div class="check">›</div></a>`;
 }
 function alertesHtml(P) { return P.alertes.map((a) => `<div class="alerte ${a.niv}">${esc(a.txt)}</div>`).join(""); }
 
@@ -609,19 +621,19 @@ function vRetour(a, b, q) {
     <p class="muted">30 secondes, et ton plan s'adapte.</p>
     <label class="btn second large" style="margin:8px 0 0">⌚ Importer depuis Garmin (fichier GPX ou TCX)<input type="file" id="gpx" accept=".gpx,.tcx,application/gpx+xml,application/xml,text/xml" hidden></label>
     <p class="muted" id="gpxmsg" style="margin-top:6px">${L && L.trace ? "📍 Trace GPS enregistrée avec cette séance." : "Distance, D+, durée, FC et cadence se remplissent tout seuls, et tes sommets se débloquent."}</p>
-    <form id="f">
+    <form id="f" novalidate>
       ${estCourse ? "" : `<label>Séance</label><select name="sessionId" id="sid"><option value="autre" ${sid === "autre" ? "selected" : ""}>Autre / séance libre</option>${options}</select>
       <div id="catLibre"><label>Type de séance libre</label><select name="cat">${CATEGORIES.map((c) => `<option value="${c.id}" ${L && L.cat === c.id ? "selected" : ""}>${c.emoji} ${c.nom}</option>`).join("")}</select>
       <label>Nom (facultatif)</label><input name="nomLibre" value="${L && L.sessionId === "autre" ? esc(L.nom) : ""}" placeholder="ex. Sortie avec les copines"></div>`}
       <div class="grid2"><div><label>Date</label><input type="date" name="date" value="${v.date}" max="${today()}"></div>
       <div><label>Durée (min)</label><input type="number" inputmode="numeric" name="duree" value="${esc(v.duree)}" min="0"></div></div>
-      <div id="blocDist" class="grid2"><div><label>Distance (km)</label><input type="number" inputmode="decimal" step="0.1" name="km" value="${esc(v.km || "")}"></div>
+      <div id="blocDist" class="grid2"><div><label>Distance (km)</label><input type="text" inputmode="decimal" name="km" value="${esc(v.km || "")}"></div>
       <div><label>D+ (m)</label><input type="number" inputmode="numeric" name="dplus" value="${esc(v.dplus || "")}"></div></div>
       <div id="blocCad" class="grid2"><div><label>Cadence moy. (pas/min)</label><input type="number" inputmode="numeric" name="cadence" value="${esc(v.cadence || "")}"></div>
       <div><label>FC moyenne</label><input type="number" inputmode="numeric" name="fc" value="${esc(v.fc || "")}"></div></div>
       <div id="blocChrono"><label>Chrono (h:mm:ss)</label><input name="chrono" value="${esc(v.chrono || "")}" placeholder="1:32:10"></div>
-      <div id="blocPresse" class="grid2"><div><label>Presse jambe DROITE (kg)</label><input type="number" inputmode="decimal" name="presseD" value="${esc(v.presseD || "")}"></div>
-      <div><label>Presse jambe GAUCHE (kg)</label><input type="number" inputmode="decimal" name="presseG" value="${esc(v.presseG || "")}"></div></div>
+      <div id="blocPresse" class="grid2"><div><label>Presse jambe DROITE (kg)</label><input type="text" inputmode="decimal" name="presseD" value="${esc(v.presseD || "")}"></div>
+      <div><label>Presse jambe GAUCHE (kg)</label><input type="text" inputmode="decimal" name="presseG" value="${esc(v.presseG || "")}"></div></div>
       ${curseur("ressenti", "Effort ressenti", v.ressenti, 1, 10, "très facile", "à bloc")}
       ${curseur("fatigue", "Fatigue générale aujourd'hui", v.fatigue, 1, 10, "en forme", "épuisée")}
       ${curseur("hanche", "Hanche droite", v.hanche, 0, 10, "rien", "douleur forte")}
@@ -679,7 +691,8 @@ function vRetour(a, b, q) {
       nom: estCourse ? (obj ? obj.nom : "Course") : s ? s.nom : d.nomLibre || catInfo(d.cat).nom,
       course: estCourse || (L && L.course) || false,
     };
-    ["duree", "km", "dplus", "cadence", "fc", "presseD", "presseG", "ressenti", "fatigue", "hanche"].forEach((k) => { if (d[k] !== undefined && d[k] !== "") log[k] = Number(String(d[k]).replace(",", ".")); });
+    ["duree", "km", "dplus", "cadence", "fc", "presseD", "presseG", "ressenti", "fatigue", "hanche"].forEach((k) => { const n = parseFloat(String(d[k] ?? "").replace(",", ".")); if (d[k] !== undefined && d[k] !== "" && isFinite(n)) log[k] = n; });
+    if (!(s && s.test === "presse")) { delete log.presseD; delete log.presseG; } // seulement pour les séances avec test presse
     if (d.chrono) log.chrono = d.chrono;
     if (d.note) log.note = d.note.trim();
     if (d.ravito && log.cat === "trail") log.ravito = d.ravito.trim();
@@ -694,11 +707,15 @@ function vRetour(a, b, q) {
     if (log.hanche >= 4) msg = "Enregistré. Ta hanche est notée : la suite s'adapte 🧡";
     if (sommetsNeufs.length) msg = `🏔️ ${sommetsNeufs.length > 1 ? sommetsNeufs.length + " sommets débloqués" : "Débloqué"} : ${sommetsNeufs.map((p) => p.nom).join(", ")} !`;
     toast(nouveaux.length ? `🏅 Nouveau badge : ${nouveaux.map((x) => x.emoji + " " + x.nom).join(", ")}` : msg, nouveaux.length || sommetsNeufs.length ? 4500 : 2800);
-    location.hash = estCourse && !L ? `#bravo/${log.id}` : L ? "#progres" : "#accueil";
+    if (estCourse && !L) location.hash = `#bravo/${log.id}`;
+    else if (L) retourArriere();
+    else location.hash = "#accueil";
   };
   const sup = document.getElementById("suppr");
-  if (sup) sup.onclick = () => { if (confirm("Supprimer cette séance ?")) { S.logs = S.logs.filter((l) => l.id !== L.id); save(); location.hash = "#progres"; } };
+  if (sup) sup.onclick = () => { if (confirm(`Supprimer « ${L.nom} » du ${fmtDate(L.date)} ?`)) { S.logs = S.logs.filter((l) => l.id !== L.id); save(); toast("Séance supprimée 🗑"); retourArriere(); } };
 }
+// Revient à l'écran d'où l'on vient (semaine, accueil ou progrès)
+function retourArriere() { if (history.length > 1) history.back(); else location.hash = "#progres"; }
 function curseur(nom, titre, val, min, max, g, d) {
   return `<label>${titre} : <span class="val" id="v-${nom}">${val}</span>/${max}</label>
     <input type="range" name="${nom}" min="${min}" max="${max}" value="${val}"><div class="echelle"><span>${g}</span><span>${d}</span></div>`;

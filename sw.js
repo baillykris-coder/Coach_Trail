@@ -1,6 +1,6 @@
 /* Coach Trail — fonctionnement hors réseau.
    Changer VERSION à chaque mise à jour de l'appli pour que le téléphone la récupère. */
-const VERSION = "coach-trail-v6";
+const VERSION = "coach-trail-v7";
 const FICHIERS = ["./", "./index.html", "./styles.css", "./data.js", "./machines.js", "./plan.js", "./extras.js", "./app.js", "./manifest.json", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
