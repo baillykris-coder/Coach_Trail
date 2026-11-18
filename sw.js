@@ -1,7 +1,7 @@
 /* Coach Trail — fonctionnement hors réseau.
    Changer VERSION à chaque mise à jour de l'appli pour que le téléphone la récupère. */
-const VERSION = "coach-trail-v7";
-const FICHIERS = ["./", "./index.html", "./styles.css", "./data.js", "./machines.js", "./plan.js", "./extras.js", "./app.js", "./manifest.json", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png"];
+const VERSION = "coach-trail-v8";
+const FICHIERS = ["./", "./index.html", "./styles.css", "./data.js", "./machines.js", "./plan.js", "./programme.js", "./extras.js", "./app.js", "./manifest.json", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));

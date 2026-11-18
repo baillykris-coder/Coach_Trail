@@ -188,9 +188,9 @@ function route() {
   const [chemin, qs] = h.split("?");
   const q = Object.fromEntries(new URLSearchParams(qs || ""));
   const [vue, a, b] = chemin.split("/");
-  document.querySelectorAll(".tabbar a").forEach((x) => x.classList.toggle("on", x.dataset.tab === (["seance", "go", "petits", "machines", "machine"].includes(vue) ? "seances" : ["retour", "ravito", "jourj", "sommets", "bravo"].includes(vue) ? "accueil" : vue)));
+  document.querySelectorAll(".tabbar a").forEach((x) => x.classList.toggle("on", x.dataset.tab === (["seance", "go", "petits", "machines", "machine"].includes(vue) ? "seances" : ["retour", "ravito", "jourj", "sommets", "bravo"].includes(vue) ? "accueil" : vue === "programme" ? "semaine" : vue)));
   document.getElementById("tabbar").hidden = vue === "go";
-  const vues = { accueil: vAccueil, semaine: vSemaine, seances: vSeances, seance: vSeance, go: vGo, retour: vRetour, progres: vProgres, reglages: vReglages, petits: vPetits, machines: vMachines, machine: vMachine, ravito: vRavito, jourj: vJourJ, sommets: vSommets, bravo: vBravo };
+  const vues = { accueil: vAccueil, semaine: vSemaine, seances: vSeances, seance: vSeance, go: vGo, retour: vRetour, progres: vProgres, reglages: vReglages, petits: vPetits, machines: vMachines, machine: vMachine, ravito: vRavito, jourj: vJourJ, sommets: vSommets, bravo: vBravo, programme: vProgramme };
   (vues[vue] || vAccueil)(a, b, q);
   remplirPhotos();
   window.scrollTo(0, 0);
@@ -264,8 +264,16 @@ function vAccueil() {
     <p class="muted" style="margin-top:-6px">Focus : ${FOCUS.find((f) => f.id === P.focus).emoji} ${FOCUS.find((f) => f.id === P.focus).nom} · <a href="#semaine">changer</a></p>
     ${P.socle.map(slotHtml).join("")}
 
+    ${(() => {
+      const j = programmeAujourdhui();
+      if (!j) return "";
+      const s = j.id ? seance(j.id) : null;
+      const quoi = j.course ? "🏁 Le jour J !" : j.repos ? "😴 Repos" : `${catInfo(s ? s.cat : "").emoji} ${esc(s ? s.nom : "")}${j.sl ? ` · ${j.km} km` : ""}`;
+      return `<a class="card lien" href="#semaine" style="border:2px solid var(--violet)"><div class="row spread"><span class="muted">🎯 Programme idéal, aujourd'hui</span><span class="muted">›</span></div><h3 style="margin-top:4px">${quoi}</h3>${j.note ? `<div class="muted">${esc(j.note)}</div>` : ""}</a>`;
+    })()}
     <a class="btn large orange" href="#retour" style="margin-top:6px">✍️ J'ai fait une séance</a>
     <div class="row" style="gap:8px;margin-top:12px">
+      <a class="stat grow" href="#programme" style="text-decoration:none;color:inherit"><b>🎯</b><span>Programme</span></a>
       <a class="stat grow" href="#ravito" style="text-decoration:none;color:inherit"><b>🍌</b><span>Ravito</span></a>
       <a class="stat grow" href="#sommets" style="text-decoration:none;color:inherit"><b>🏔️ ${Object.keys(S.sommets || {}).length}/${SOMMETS.length}</b><span>Sommets</span></a>
       <a class="stat grow" href="#jourj" style="text-decoration:none;color:inherit"><b>🏁</b><span>Jour J</span></a>
@@ -295,6 +303,7 @@ function vSemaine(lundiParam) {
       <div class="row wrap"><span class="pill">${esc(P.phase)}</span>${P.wr != null ? `<span class="pill orange">${P.wr === 0 ? "Course !" : P.wr + " sem. avant la course"}</span>` : ""}${P.test ? `<span class="pill vert">Semaine test</span>` : ""}</div>
       <p style="margin-top:8px">${esc(P.note)}</p>
     </div>
+    ${programmeCarte(lundi, !passee)}
     ${!passee ? `<h2>Mon focus de la semaine</h2>
     <div class="chips">${FOCUS.map((f) => `<button class="chip ${P.focus === f.id ? "on" : ""}" data-f="${f.id}" title="${esc(f.aide)}">${f.emoji} ${f.nom}</button>`).join("")}</div>
     <p class="muted" style="margin-top:6px">${esc(FOCUS.find((f) => f.id === P.focus).aide)}</p>` : ""}

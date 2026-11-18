@@ -306,6 +306,26 @@ const SEANCES = [
     ],
   },
   {
+    id: "t-cotes-courtes", cat: "trail", nom: "Côtes courtes", duree: 50, niveau: 3,
+    resume: "8 montées d'1 minute, fortes, sur une côte régulière.",
+    pourquoi: "La puissance en montée : on recrute plus de fibres, et les côtes de la course paraîtront plus douces.",
+    etapes: [
+      st(15 * MIN, "Footing facile jusqu'au pied d'une côte régulière", "course", 2),
+      ...rep(8, [[60, "Montée forte, petits pas, bras actifs", "course", 4], [90, "Redescente en trottinant", "course", 1]]),
+      st(10 * MIN, "Retour au calme", "course", 1),
+    ],
+  },
+  {
+    id: "t-cotes-longues", cat: "trail", nom: "Côtes longues", duree: 50, niveau: 3,
+    resume: "5 montées de 3 minutes, soutenues mais régulières.",
+    pourquoi: "Tenir un effort long en montée sans exploser : exactement ce que demandent les bosses des Aspres.",
+    etapes: [
+      st(15 * MIN, "Footing facile jusqu'au pied d'une côte", "course", 2),
+      ...rep(5, [[3 * MIN, "Montée soutenue (course ou marche rapide)", "course", 4], [150, "Redescente tranquille", "course", 1]]),
+      st(10 * MIN, "Retour au calme", "course", 1),
+    ],
+  },
+  {
     id: "t-repere", cat: "trail", nom: "Parcours repère (test)", duree: 0, niveau: 3, test: "repere",
     resume: "Toujours la même boucle, chronométrée, toutes les 4-5 semaines.",
     pourquoi: "La meilleure preuve que tu progresses : même boucle, même effort, chrono et ressenti comparés.",
@@ -377,6 +397,16 @@ const SEANCES = [
       st(12 * MIN, "Palier 2 : tranquille-soutenu", "course", 3),
       st(8 * MIN, "Palier 3 : soutenu", "course", 4),
       st(8 * MIN, "Retour au calme", "course", 1),
+    ],
+  },
+  {
+    id: "p-seuil", cat: "plat", nom: "Seuil : 3 × 10'", duree: 64, niveau: 3,
+    resume: "3 blocs de 10 minutes un peu plus vite que l'allure course.",
+    pourquoi: "Repousser ton seuil : tu tiendras une allure plus rapide plus longtemps sans te mettre dans le rouge.",
+    etapes: [
+      st(15 * MIN, "Footing facile", "course", 2),
+      ...rep(3, [[10 * MIN, "Soutenu, régulier (un peu plus vite que l'allure course)", "course", 3], [3 * MIN, "Trottiner", "course", 2]]),
+      st(10 * MIN, "Retour au calme", "course", 1),
     ],
   },
   {
